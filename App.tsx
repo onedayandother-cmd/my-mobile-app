@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { ViewState, User, ScheduledNotification } from './types';
 
-// استيراد المكونات والصفحات بحروف صغيرة لضمان التوافق
-import { Navbar } from './components/navbar';
-import Dashboard from './pages/dashboard';
-import Members from './pages/members';
-import Reports from './pages/reports';
-import UsersPage from './pages/users';
-import Settings from './pages/settings';
-import AIAssistant from './pages/aiassistant';
-import FollowUp from './pages/followup';
-import Store from './pages/store';
-import Activities from './pages/activities';
-import Login from './pages/login';
+// لاحظ الحرف الكبير في بداية أسماء المجلدات والملفات (حسب الصورة الأولى)
+import { Navbar } from './components/Navbar';
+import Dashboard from './pages/Dashboard';
+import Members from './pages/Members';
+import Reports from './pages/Reports';
+import UsersPage from './pages/Users';
+import Settings from './pages/Settings';
+import AIAssistant from './pages/AIAssistant';
+import FollowUp from './pages/FollowUp';
+import Store from './pages/Store';
+import Activities from './pages/Activities';
+import Login from './pages/Login';
 
 import { 
   seedData, 
@@ -33,43 +33,6 @@ const App: React.FC = () => {
     seedData();
     const storedUser = getCurrentUser();
     setUser(storedUser);
-
-    if ("Notification" in window) {
-      if (Notification.permission !== "granted" && Notification.permission !== "denied") {
-        Notification.requestPermission();
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    const checkNotifications = () => {
-      const now = Date.now();
-      const scheduled = getScheduledNotifications();
-      const pending = scheduled.filter(n => n.status === 'pending' && n.scheduledTime <= now);
-      
-      if (pending.length > 0) {
-        pending.forEach(notif => {
-          setActiveNotification(notif);
-          if ("Notification" in window && Notification.permission === "granted") {
-            new Notification(notif.title, { body: notif.body, icon: '/icon.png' });
-          }
-          saveAnnouncement({
-             id: Date.now().toString(),
-             title: notif.title,
-             body: notif.body,
-             targetGroup: notif.targetGroup,
-             recipientCount: 0,
-             timestamp: now
-          });
-          notif.status = 'sent';
-          saveScheduledNotification(notif);
-        });
-        setTimeout(() => setActiveNotification(null), 8000);
-      }
-    };
-
-    const interval = setInterval(checkNotifications, 15000);
-    return () => clearInterval(interval);
   }, []);
 
   const handleLogin = (loggedInUser: User) => {
@@ -98,28 +61,10 @@ const App: React.FC = () => {
     }
   };
 
-  if (!user) {
-    return (
-      <div className="min-h-[100dvh] bg-slate-50 text-slate-900 font-cairo">
-         <Login onLogin={handleLogin} />
-      </div>
-    );
-  }
+  if (!user) return <Login onLogin={handleLogin} />;
 
   return (
     <div className="min-h-[100dvh] bg-slate-50 text-slate-900 font-cairo flex flex-col">
-      {activeNotification && (
-        <div className="fixed top-4 left-4 right-4 z-[60] bg-indigo-600 text-white p-4 rounded-xl shadow-2xl flex items-start gap-3 animate-fade-in-down">
-           <Bell className="shrink-0 mt-1" />
-           <div className="flex-1">
-              <h3 className="font-bold text-lg">{activeNotification.title}</h3>
-              <p className="text-indigo-100 text-sm">{activeNotification.body}</p>
-           </div>
-           <button onClick={() => setActiveNotification(null)} className="text-white opacity-80 hover:opacity-100">
-             <X size={20} />
-           </button>
-        </div>
-      )}
       <main className="flex-1 w-full max-w-lg mx-auto md:max-w-4xl relative">
         {renderContent()}
       </main>
