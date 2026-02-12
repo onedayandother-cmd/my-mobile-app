@@ -1,17 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { ViewState, User, ScheduledNotification } from './types';
 import { Navbar } from './components/Navbar';
-import { Dashboard } from './pages/Dashboard';
-import { Members } from './pages/Members';
-import { Reports } from './pages/Reports';
-import { UsersPage } from './pages/Users';
-import { Settings } from './pages/Settings';
-import { AIAssistant } from './pages/AIAssistant';
-import { FollowUp } from './pages/FollowUp';
-import { Store } from './pages/Store';
-import { Activities } from './pages/Activities';
-import { Login } from './pages/Login';
-import { seedData, getCurrentUser, getScheduledNotifications, saveScheduledNotification, saveAnnouncement } from './utils/storage';
+
+// استيراد الصفحات (تأكد أن أسماء الملفات في مجلد pages تبدأ بحرف كبير)
+import Dashboard from './pages/Dashboard';
+import Members from './pages/Members';
+import Reports from './pages/Reports';
+import UsersPage from './pages/Users';
+import Settings from './pages/Settings';
+import AIAssistant from './pages/AIAssistant';
+import FollowUp from './pages/FollowUp';
+import Store from './pages/Store';
+import Activities from './pages/Activities';
+import Login from './pages/Login';
+
+import { 
+  seedData, 
+  getCurrentUser, 
+  getScheduledNotifications, 
+  saveScheduledNotification, 
+  saveAnnouncement 
+} from './utils/storage';
+
 import { Bell, X } from 'lucide-react';
 
 const App: React.FC = () => {
@@ -24,7 +34,7 @@ const App: React.FC = () => {
     const storedUser = getCurrentUser();
     setUser(storedUser);
 
-    // Request Notification Permission on load
+    // طلب إذن التنبيهات عند التحميل
     if ("Notification" in window) {
       if (Notification.permission !== "granted" && Notification.permission !== "denied") {
         Notification.requestPermission();
@@ -32,7 +42,7 @@ const App: React.FC = () => {
     }
   }, []);
 
-  // Background Notification Checker
+  // فاحص التنبيهات في الخلفية
   useEffect(() => {
     const checkNotifications = () => {
       const now = Date.now();
@@ -42,35 +52,35 @@ const App: React.FC = () => {
       
       if (pending.length > 0) {
         pending.forEach(notif => {
-          // 1. Show In-App (Active State)
+          // 1. إظهار التنبيه داخل التطبيق
           setActiveNotification(notif);
           
-          // 2. Show System Notification
+          // 2. إظهار تنبيه النظام (System Notification)
           if ("Notification" in window && Notification.permission === "granted") {
             new Notification(notif.title, { body: notif.body, icon: '/icon.png' });
           }
 
-          // 3. Move to Announcements Log
+          // 3. الحفظ في سجل الإعلانات
           saveAnnouncement({
              id: Date.now().toString(),
              title: notif.title,
              body: notif.body,
              targetGroup: notif.targetGroup,
-             recipientCount: 0, // Calculated dynamically usually
+             recipientCount: 0,
              timestamp: now
           });
 
-          // 4. Update Status
+          // 4. تحديث الحالة
           notif.status = 'sent';
           saveScheduledNotification(notif);
         });
 
-        // Clear active notification toast after 5 seconds
+        // إخفاء التنبيه المنبثق بعد 8 ثوانٍ
         setTimeout(() => setActiveNotification(null), 8000);
       }
     };
 
-    const interval = setInterval(checkNotifications, 15000); // Check every 15s
+    const interval = setInterval(checkNotifications, 15000); // الفحص كل 15 ثانية
     return () => clearInterval(interval);
   }, []);
 
@@ -121,7 +131,7 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-[100dvh] bg-slate-50 text-slate-900 font-cairo flex flex-col">
-      {/* Notification Toast */}
+      {/* التنبيه المنبثق (Toast) */}
       {activeNotification && (
         <div className="fixed top-4 left-4 right-4 z-[60] bg-indigo-600 text-white p-4 rounded-xl shadow-2xl flex items-start gap-3 animate-fade-in-down">
            <Bell className="shrink-0 mt-1" />
